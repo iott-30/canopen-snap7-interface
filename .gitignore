@@ -1,0 +1,13 @@
+# Ignore TIA Portal temporary and log files inside the subfolder
+**/Logs/
+**/IM/
+*.ldb
+*.tmp
+
+# Ignore Python temporary files inside the simulation subfolder
+**/__pycache__/
+*.pyc
+
+# Optional: Ignore OS-generated files
+.DS_Store
+Thumbs.db
