@@ -1,8 +1,5 @@
-# Ignore TIA Portal temporary and log files inside the subfolder
-**/Logs/
-**/IM/
-*.ldb
-*.tmp
+# Ignore TIA Portal Project folder (binary files)
+TIA Portal Project/
 
 # Ignore Python temporary files inside the simulation subfolder
 **/__pycache__/
