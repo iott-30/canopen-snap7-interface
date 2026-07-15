@@ -11,7 +11,15 @@ venv/
 env/
 .env/
 
-
 # Optional: Ignore OS-generated files
 .DS_Store
 Thumbs.db
+
+# VS Code personal settings
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+
+# User-specific files
+.vscode/sftp.json
+.vscode/ftp-sync.json
