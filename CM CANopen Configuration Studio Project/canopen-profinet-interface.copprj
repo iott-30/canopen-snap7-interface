@@ -1,0 +1,146 @@
+<CoBrProject Type="CANopen" Version="1.0.0.0">
+  <Groups>
+    <Group Name="Manager" />
+    <Group Name="Slaves" />
+  </Groups>
+  <Hub Ports="-1">
+    <Nodes>
+      <Node ID="1" Group="Manager" LogicalName="S7-1200_x0020_CM_x0020_CANopen_x0020__x0028_CANopen_x0020_manager_x0029_" GUID="_x0032_9258d52-d7c4-44ea-9222-7de0ec7a6467" />
+      <Node ID="2" Group="Slaves" LogicalName="Test_x0020_device" GUID="_x0034_5225df9-933e-4751-b35e-7c0740a215ae">
+        <NodeProperties>
+          <Description>Test_x0020_device_x0020_generated_x0020_from_x0020_the_x0020_basicDevice.eds_x0020_file</Description>
+        </NodeProperties>
+      </Node>
+    </Nodes>
+    <Hubs />
+  </Hub>
+  <Data>
+    <SyncProducer time="0" />
+    <ProjectProperties>
+      <CreationDate>_x0032_026-07-11T17:40:41</CreationDate>
+      <ModificationDate>_x0032_026-07-14T17:43:02</ModificationDate>
+      <CreatedBy>
+      </CreatedBy>
+      <ModifiedBy>
+      </ModifiedBy>
+      <Description>
+      </Description>
+    </ProjectProperties>
+    <GroupProperties>
+      <Group name="Slaves">
+        <Description>
+        </Description>
+      </Group>
+    </GroupProperties>
+    <MappingManager>
+      <Objects>
+        <Object nodeId="02" main="1280" sub="01" txType="FF" in="True" mapped="False" group="default" />
+        <Object nodeId="02" main="1280" sub="02" txType="FF" in="True" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="01" txType="FF" in="True" mapped="True" group="default">
+          <DefaultPDO pdoNumber="0000" />
+        </Object>
+        <Object nodeId="02" main="6200" sub="02" txType="FF" in="True" mapped="True" group="default">
+          <DefaultPDO pdoNumber="0000" />
+        </Object>
+        <Object nodeId="02" main="6200" sub="03" txType="FF" in="True" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="04" txType="FF" in="True" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="05" txType="FF" in="True" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="06" txType="FF" in="True" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="07" txType="FF" in="True" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="08" txType="FF" in="True" mapped="False" group="default" />
+        <Object nodeId="02" main="6411" sub="01" txType="FF" in="True" mapped="True" group="default">
+          <DefaultPDO pdoNumber="0001" />
+        </Object>
+        <Object nodeId="02" main="6411" sub="02" txType="FF" in="True" mapped="True" group="default">
+          <DefaultPDO pdoNumber="0001" />
+        </Object>
+        <Object nodeId="02" main="6411" sub="03" txType="FF" in="True" mapped="True" group="default">
+          <DefaultPDO pdoNumber="0001" />
+        </Object>
+        <Object nodeId="02" main="6411" sub="04" txType="FF" in="True" mapped="True" group="default">
+          <DefaultPDO pdoNumber="0001" />
+        </Object>
+        <Object nodeId="02" main="6411" sub="05" txType="FF" in="True" mapped="False" group="default" />
+        <Object nodeId="02" main="6411" sub="06" txType="FF" in="True" mapped="False" group="default" />
+        <Object nodeId="02" main="6411" sub="07" txType="FF" in="True" mapped="False" group="default" />
+        <Object nodeId="02" main="6411" sub="08" txType="FF" in="True" mapped="False" group="default" />
+        <Object nodeId="02" main="1001" sub="00" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="1200" sub="01" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="1200" sub="02" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="1280" sub="01" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="1280" sub="02" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6000" sub="01" txType="FF" in="False" mapped="True" group="default">
+          <DefaultPDO pdoNumber="0000" />
+        </Object>
+        <Object nodeId="02" main="6000" sub="02" txType="FF" in="False" mapped="True" group="default">
+          <DefaultPDO pdoNumber="0000" />
+        </Object>
+        <Object nodeId="02" main="6000" sub="03" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6000" sub="04" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6000" sub="05" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6000" sub="06" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6000" sub="07" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6000" sub="08" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="00" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="01" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="02" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="03" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="04" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="05" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="06" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="07" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6200" sub="08" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6401" sub="00" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6401" sub="01" txType="FF" in="False" mapped="True" group="default">
+          <DefaultPDO pdoNumber="0001" />
+        </Object>
+        <Object nodeId="02" main="6401" sub="02" txType="FF" in="False" mapped="True" group="default">
+          <DefaultPDO pdoNumber="0001" />
+        </Object>
+        <Object nodeId="02" main="6401" sub="03" txType="FF" in="False" mapped="True" group="default">
+          <DefaultPDO pdoNumber="0001" />
+        </Object>
+        <Object nodeId="02" main="6401" sub="04" txType="FF" in="False" mapped="True" group="default">
+          <DefaultPDO pdoNumber="0001" />
+        </Object>
+        <Object nodeId="02" main="6401" sub="05" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6401" sub="06" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6401" sub="07" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6401" sub="08" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6401" sub="09" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6401" sub="0A" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6401" sub="0B" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6401" sub="0C" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6401" sub="0D" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6401" sub="0E" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6401" sub="0F" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6401" sub="10" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6411" sub="00" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6411" sub="01" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6411" sub="02" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6411" sub="03" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6411" sub="04" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6411" sub="05" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6411" sub="06" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6411" sub="07" txType="FF" in="False" mapped="False" group="default" />
+        <Object nodeId="02" main="6411" sub="08" txType="FF" in="False" mapped="False" group="default" />
+      </Objects>
+    </MappingManager>
+    <Manager>
+      <SlaveIdentificationDefaults identifyDeviceType="False" identifyVendorId="False" identifyProductCode="False" identifyRevisionNumber="False" />
+      <SlaveAssignmentDefaults>00000085</SlaveAssignmentDefaults>
+      <ConfigurationDateTimeDefaults generateTime="False" generateDate="False" />
+    </Manager>
+    <DefaultMappingManager>
+      <PDOs>
+        <PDO nodeId="02" isInNotOut="False" pdoNumber="00" txType="FF" />
+        <PDO nodeId="02" isInNotOut="False" pdoNumber="01" txType="FF" />
+        <PDO nodeId="02" isInNotOut="True" pdoNumber="00" txType="FF" />
+        <PDO nodeId="02" isInNotOut="True" pdoNumber="01" txType="FF" />
+      </PDOs>
+    </DefaultMappingManager>
+    <ErrorControl>
+      <ErrorControlDefaults ErrorControlTimeout="000001F4" RetyFactor="00000003" ConsumerProducerRatio="1.5" />
+    </ErrorControl>
+  </Data>
+</CoBrProject>
