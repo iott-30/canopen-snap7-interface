@@ -24,5 +24,6 @@ Thumbs.db
 .vscode/sftp.json
 .vscode/ftp-sync.json
 
-# canopen traffic log
+# canopen traffic logs
 py-canopen-node/canopen_traffic.log
+py-canopen-node/past-logs/
