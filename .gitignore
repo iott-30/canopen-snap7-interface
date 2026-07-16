@@ -23,3 +23,6 @@ Thumbs.db
 # User-specific files
 .vscode/sftp.json
 .vscode/ftp-sync.json
+
+# canopen traffic log
+py-canopen-node/canopen_traffic.log
