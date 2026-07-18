@@ -1,9 +1,9 @@
 """
 CANopen slave node simulation.
 
-Connects to the RH02 (gs_usb) adapter, loads a simulated device from an EDS 
-file as a canopen LocalNode, boots it up over the bus, and logs all traffic 
-to both the terminal and a file in real time.
+Opens the RH02 (gs_usb) adapter, loads a simulated device from an EDS file
+as a canopen LocalNode, boots it up over the bus, and logs all traffic to
+both the terminal and a file in real time.
 """
 
 import time
@@ -15,7 +15,7 @@ import usb.core
 import usb.backend.libusb1
 import libusb_package
 
-# --- gs_usb / libusb backend fix ---
+# --- gs_usb / libusb backend fix (see earlier debugging session) ---
 # Monkey patch to access DLL for adapter (I think)
 _backend = usb.backend.libusb1.get_backend(find_library=libusb_package.find_library)
 import can.interfaces.gs_usb as gs_usb_mod
@@ -27,6 +27,7 @@ NODE_ID = 2                    # must match the node ID configured in CM CANopen
 EDS_PATH = "basicDevice.eds"   # path to the trimmed EDS file
 CHANNEL = "0"                  # gs_usb device index (see enumeration script from earlier)
 BITRATE = 500000               # must match the CM module's configured bitrate
+HEARTBEAT_MS = 500             # must match "Error Control Configuration" -> producer heartbeat time in CM Config Studio
 LOG_FILE = "canopen_traffic.log"
 
 # --- Logging setup: everything goes to both the terminal and a file, live ---
@@ -68,15 +69,26 @@ def main():
     node = canopen.LocalNode(NODE_ID, EDS_PATH)
     network.add_node(node)
 
+    # Set the heartbeat producer time BEFORE the NMT transition below, not after.
+    # The master starts monitoring node 2's heartbeat well before it gets around
+    # to writing 0x1017 itself (partway through its own config sequence: device
+    # type read, restore defaults, NMT reset, re-enter pre-op...). If we wait for
+    # that write to start producing heartbeats, the master's consumer timeout
+    # can elapse first, which is what an 0x8F02 "Heartbeat Consume error" EMCY
+    # means. Setting it ourselves first means heartbeat is already running
+    # before the master ever starts its clock.
+    node.sdo[0x1017].raw = HEARTBEAT_MS
+
     # NMT boot sequence, matching what a real device does:
     #   - Setting state to RESET moves the internal state to 0 (INITIALISING),
     #     which is what actually triggers canopen to transmit the 0x700+ID
     #     boot-up frame on the bus.
-    #   - Setting state to PRE-OPERATIONAL immediately after puts the node in
-    #     the state it should be in for the master to start talking to it.
+    #   - Setting state to PRE-OPERATIONAL immediately after is what starts the
+    #     heartbeat producer (using the 0x1017 value set above) and puts the
+    #     node in the state the master expects to talk to it in.
     # Going straight to PRE-OPERATIONAL from a freshly-constructed node still
-    # "works," but silently skips sending the boot-up frame, since that
-    # message only fires on the transition *into* state 0.
+    # "works" for the heartbeat start, but silently skips sending the boot-up
+    # frame, since that message only fires on the transition *into* state 0.
     node.nmt.state = "RESET"
     node.nmt.state = "PRE-OPERATIONAL"
 
