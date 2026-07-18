@@ -18,7 +18,7 @@
     <SyncProducer time="0" />
     <ProjectProperties>
       <CreationDate>_x0032_026-07-11T17:40:41</CreationDate>
-      <ModificationDate>_x0032_026-07-14T17:43:02</ModificationDate>
+      <ModificationDate>_x0032_026-07-18T14:51:39</ModificationDate>
       <CreatedBy>
       </CreatedBy>
       <ModifiedBy>
@@ -28,8 +28,7 @@
     </ProjectProperties>
     <GroupProperties>
       <Group name="Slaves">
-        <Description>
-        </Description>
+        <Description />
       </Group>
     </GroupProperties>
     <MappingManager>
