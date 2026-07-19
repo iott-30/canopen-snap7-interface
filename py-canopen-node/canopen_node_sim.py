@@ -16,7 +16,6 @@ import usb.backend.libusb1
 import libusb_package
 
 # --- gs_usb / libusb backend fix (see earlier debugging session) ---
-# Monkey patch to access DLL for adapter (I think)
 _backend = usb.backend.libusb1.get_backend(find_library=libusb_package.find_library)
 import can.interfaces.gs_usb as gs_usb_mod
 _original_find = usb.core.find
@@ -51,6 +50,18 @@ class TrafficLogger(can.Listener):
     def on_message_received(self, msg: can.Message):
         data_hex = msg.data.hex(" ").upper()
         logger.info(f"ID=0x{msg.arbitration_id:03X}  DLC={msg.dlc}  Data=[{data_hex}]")
+
+
+def log_event(message: str):
+    """Log a device-level event (PDO state/changes, etc.), with a blank line
+    before and after so it visually stands out from raw traffic frames in
+    both the terminal and the log file."""
+    for handler in (console_handler, file_handler):
+        handler.stream.write("\n")
+    logger.info(message)
+    for handler in (console_handler, file_handler):
+        handler.stream.write("\n")
+        handler.flush()
 
 
 def main():
@@ -92,11 +103,73 @@ def main():
     node.nmt.state = "RESET"
     node.nmt.state = "PRE-OPERATIONAL"
 
+    # --- PDO setup ---
+    # Configured to match what CM Configuration Studio actually assigns
+    # (confirmed from a captured successful boot): TPDO1 = COB-ID 0x180+id,
+    # RPDO1 = COB-ID 0x200+id, both using the EDS's default 2-byte mapping
+    # (sub1 + sub2). This is hardcoded rather than tracked live from the
+    # master's SDO writes -- simple and correct as long as Configuration
+    # Studio isn't changed to use different COB-IDs or mappings.
+    TPDO1_COB_ID = 0x180 + NODE_ID
+    RPDO1_COB_ID = 0x200 + NODE_ID
+
+    tpdo1 = node.tpdo[1]
+    tpdo1.clear()
+    tpdo1.add_variable(0x6000, 1)  # sub1: the byte we're actually driving
+    tpdo1.add_variable(0x6000, 2)  # sub2: left at its default (0x00)
+    tpdo1.cob_id = TPDO1_COB_ID
+    tpdo1.enabled = True
+
+    rpdo1 = node.rpdo[1]
+    rpdo1.clear()
+    rpdo1.add_variable(0x6200, 1)  # sub1: what the PLC is driving
+    rpdo1.add_variable(0x6200, 2)  # sub2
+    rpdo1.cob_id = RPDO1_COB_ID
+    rpdo1.enabled = True
+    rpdo1.subscribe()  # register with the network so incoming frames on 0x202 actually reach us
+
+    last_rpdo1 = [None, None]
+
+    def on_rpdo1(pdo_map):
+        nonlocal last_rpdo1
+        current = [pdo_map[i].raw for i in range(2)]
+        if last_rpdo1 == [None, None]:
+            log_event(f"RPDO1 initial state: sub1=0b{current[0]:08b}  sub2=0b{current[1]:08b}")
+        else:
+            changes = [
+                f"sub{i + 1}: 0b{last_rpdo1[i]:08b} -> 0b{current[i]:08b}"
+                for i in range(2) if current[i] != last_rpdo1[i]
+            ]
+            if changes:
+                log_event("RPDO1 changed - " + ", ".join(changes))
+        last_rpdo1 = current
+
+    rpdo1.add_callback(on_rpdo1)
+
     logger.info(f"Node {NODE_ID} is up. Logging to {LOG_FILE}. Ctrl+C to stop.")
+
+    # PDOs are only meaningful once the master brings us to OPERATIONAL, so
+    # wait for that transition (there's no state-change callback in canopen's
+    # NMT implementation, so this just polls) before sending TPDO1's first value.
+    last_nmt_state = None
+    tpdo1_initialized = False
 
     try:
         while True:
-            time.sleep(1)
+            current_state = node.nmt.state
+            if current_state != last_nmt_state:
+                logger.info(f"NMT state -> {current_state}")
+                last_nmt_state = current_state
+
+            if current_state == "OPERATIONAL" and not tpdo1_initialized:
+                tpdo1[0].raw = 0b10010000
+                log_event(
+                    f"TPDO1 initial state: sub1=0b{tpdo1[0].raw:08b}  sub2=0b{tpdo1[1].raw:08b}"
+                )
+                tpdo1.transmit()
+                tpdo1_initialized = True
+
+            time.sleep(0.2)
     except KeyboardInterrupt:
         logger.info("Shutting down...")
     finally:
