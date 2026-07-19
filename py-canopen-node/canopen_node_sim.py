@@ -8,6 +8,7 @@ both the terminal and a file in real time.
 
 import time
 import logging
+import threading
 
 import can
 import canopen
@@ -27,6 +28,7 @@ EDS_PATH = "basicDevice.eds"   # path to the trimmed EDS file
 CHANNEL = "0"                  # gs_usb device index (see enumeration script from earlier)
 BITRATE = 500000               # must match the CM module's configured bitrate
 HEARTBEAT_MS = 500             # must match "Error Control Configuration" -> producer heartbeat time in CM Config Studio
+MASTER_NODE_ID = 1             # the CM CANopen module's own node ID on this network
 LOG_FILE = "canopen_traffic.log"
 
 # --- Logging setup: everything goes to both the terminal and a file, live ---
@@ -146,6 +148,23 @@ def main():
 
     rpdo1.add_callback(on_rpdo1)
 
+    # In both captured logs, the master formally starts node 2 (targeted Start,
+    # 01 02) roughly a second *before* it starts itself (01 01) and broadcasts
+    # a final Start (01 00) -- and TPDO1 only gets picked up into the PLC's
+    # process image after that second step. Since TPDO1 is event-driven with
+    # no periodic resend (event timer = 0), a single transmission that lands
+    # before the master's own Start is simply lost -- nothing will trigger us
+    # to send it again. Watching the master's own heartbeat (node MASTER_NODE_ID)
+    # for OPERATIONAL gives us a real signal to resend against, instead of
+    # guessing at a delay.
+    master_operational = threading.Event()
+
+    def on_master_heartbeat(can_id, data, timestamp):
+        if data == b"\x05":
+            master_operational.set()
+
+    network.subscribe(0x700 + MASTER_NODE_ID, on_master_heartbeat)
+
     logger.info(f"Node {NODE_ID} is up. Logging to {LOG_FILE}. Ctrl+C to stop.")
 
     # PDOs are only meaningful once the master brings us to OPERATIONAL, so
@@ -153,6 +172,7 @@ def main():
     # NMT implementation, so this just polls) before sending TPDO1's first value.
     last_nmt_state = None
     tpdo1_initialized = False
+    tpdo1_resent_after_master = False
 
     try:
         while True:
@@ -168,6 +188,19 @@ def main():
                 )
                 tpdo1.transmit()
                 tpdo1_initialized = True
+
+            # Covers the observed ordering (node 2 started, TPDO1 sent, *then*
+            # the master starts itself) by resending once we see confirmation
+            # the master is actually ready, regardless of which order the two
+            # Start events happened in.
+            if tpdo1_initialized and master_operational.is_set() and not tpdo1_resent_after_master:
+                tpdo1.transmit()
+                log_event(
+                    "Re-sent TPDO1 now that the master (node "
+                    f"{MASTER_NODE_ID}) has confirmed OPERATIONAL, in case the "
+                    "first transmission landed before its process image was ready."
+                )
+                tpdo1_resent_after_master = True
 
             time.sleep(0.2)
     except KeyboardInterrupt:
