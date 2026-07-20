@@ -1,0 +1,35 @@
+﻿FUNCTION_BLOCK "WriteCanProcessImage"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_OUTPUT 
+      Busy : Bool;
+      Error : Bool;
+      Status : DWord;
+      Done : Bool;
+   END_VAR
+
+   VAR_IN_OUT 
+      CanProcessImageOutArray : Array[0..3] of Byte;
+   END_VAR
+
+
+BEGIN
+	
+	    "WRREC_DB"(REQ := true,
+	               ID := 269,
+	               INDEX := 16#91,
+	               LEN := 4,
+	               DONE => #Done,
+	               BUSY => #Busy,
+	               ERROR => #Error,
+	               STATUS => #Status,
+	               RECORD := #CanProcessImageOutArray);
+	    
+	
+	
+	// IF #Done = true  THEN
+	//     "ControlDB".Write := false;
+	// END_IF;
+	
+END_FUNCTION_BLOCK
+

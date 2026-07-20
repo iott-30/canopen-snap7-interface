@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Document>
+  <Engineering version="V19" />
+  <SW.Blocks.GlobalDB ID="0">
+    <AttributeList>
+      <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5">
+  <Section Name="Static">
+    <Member Name="CanProcessImageIn" Datatype="Array[0..31] of Byte" />
+    <Member Name="CanProcessImageOut" Datatype="Array[0..3] of Byte">
+      <Subelement Path="0">
+        <StartValue>16#F0</StartValue>
+      </Subelement>
+    </Member>
+    <Member Name="ReadCanProcessImageBusy" Datatype="Bool" />
+    <Member Name="ReadCanProcessImageError" Datatype="Bool" />
+    <Member Name="ReadCanProcessImageSize" Datatype="UInt" />
+    <Member Name="ReadCanProcessImageStatus" Datatype="DWord" />
+    <Member Name="ReadCanProcessImageValid" Datatype="Bool" />
+    <Member Name="WriteCanProcessImageBusy" Datatype="Bool" />
+    <Member Name="WriteCanProcessImageError" Datatype="Bool" />
+    <Member Name="WriteCanProcessImageSize" Datatype="UInt" />
+    <Member Name="WriteCanProcessImageStatus" Datatype="DWord" />
+    <Member Name="WriteCanProcessImageDone" Datatype="Bool" />
+    <Member Name="DriveControlStart" Datatype="Bool" />
+    <Member Name="DriveControlTargetVelocity" Datatype="Real" />
+    <Member Name="DriveControlStatusWord" Datatype="Word" />
+    <Member Name="DriveControlCurrentVelocity" Datatype="Int" />
+    <Member Name="ErrorRegisterReq" Datatype="Bool" />
+    <Member Name="ErrorRegisterNode" Datatype="Int" />
+    <Member Name="ErrorRegisterBusy" Datatype="Bool" />
+    <Member Name="ErrorRegisterGenericError" Datatype="Bool" />
+    <Member Name="ErrorRegisterCurrentError" Datatype="Bool" />
+    <Member Name="ErrorRegisterVoltageError" Datatype="Bool" />
+    <Member Name="ErrorRegisterTemperatureError" Datatype="Bool" />
+    <Member Name="ErrorRegisterCommunicationError" Datatype="Bool" />
+    <Member Name="ErrorRegisterDeviceSpecificError" Datatype="Bool" />
+    <Member Name="ErrorRegisterManufacturerSpecificError" Datatype="Bool" />
+    <Member Name="HeartbeatReq" Datatype="Bool" />
+    <Member Name="HeartbeatNode" Datatype="Int" />
+    <Member Name="HeartbeatMilliseconds" Datatype="UInt" />
+    <Member Name="HeartbeatBusy" Datatype="Bool" />
+  </Section>
+</Sections></Interface>
+      <MemoryLayout>Optimized</MemoryLayout>
+      <MemoryReserve>100</MemoryReserve>
+      <Name>ControlDB</Name>
+      <Namespace />
+      <Number>3</Number>
+      <ProgrammingLanguage>DB</ProgrammingLanguage>
+    </AttributeList>
+    <ObjectList>
+      <MultilingualText ID="1" CompositionName="Comment">
+        <ObjectList>
+          <MultilingualTextItem ID="2" CompositionName="Items">
+            <AttributeList>
+              <Culture>en-US</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+        </ObjectList>
+      </MultilingualText>
+      <MultilingualText ID="3" CompositionName="Title">
+        <ObjectList>
+          <MultilingualTextItem ID="4" CompositionName="Items">
+            <AttributeList>
+              <Culture>en-US</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+        </ObjectList>
+      </MultilingualText>
+    </ObjectList>
+  </SW.Blocks.GlobalDB>
+</Document>
