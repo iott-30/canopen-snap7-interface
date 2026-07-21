@@ -243,13 +243,24 @@ def main():
 
     logger.info(f"Node {NODE_ID} is up. Logging to {LOG_FILE}. Ctrl+C to stop.")
 
-    # PDOs are only meaningful once the master brings us to OPERATIONAL, so
-    # wait for that transition (there's no state-change callback in canopen's
-    # NMT implementation, so this just polls) before sending each TPDO's
-    # first value.
-    last_nmt_state = None
+    # `pdo_lock` guards any code that reads/writes/transmits PDO data, since
+    # that now happens from two places: the background poll_loop thread below
+    # (initial sends, master-operational resends) and the interactive prompt
+    # on the main thread (manual TPDO2 sub1 changes). Without it, a manual
+    # change and an automatic resend could race and interleave mid-write.
+    pdo_lock = threading.Lock()
 
-    try:
+    # Signaled by poll_loop the first time the node reaches OPERATIONAL and
+    # has sent each TPDO's initial value, so the main thread knows when it's
+    # meaningful to start prompting for manual changes.
+    node_operational = threading.Event()
+
+    def poll_loop():
+        # PDOs are only meaningful once the master brings us to OPERATIONAL,
+        # so wait for that transition (there's no state-change callback in
+        # canopen's NMT implementation, so this just polls) before sending
+        # each TPDO's first value.
+        last_nmt_state = None
         while True:
             current_state = node.nmt.state
             if current_state != last_nmt_state:
@@ -257,34 +268,65 @@ def main():
                 last_nmt_state = current_state
 
             if current_state == "OPERATIONAL":
-                for t in tpdos:
-                    if not t["sent"]:
-                        for i, value in enumerate(t["values"]):
-                            t["map"][i].raw = value
-                        state_str = "  ".join(
-                            f"sub{i + 1}={t['fmt'](v)}" for i, v in enumerate(t["values"])
-                        )
-                        log_event(f"{t['name']} initial state: {state_str}")
-                        t["map"].transmit()
-                        t["sent"] = True
+                with pdo_lock:
+                    for t in tpdos:
+                        if not t["sent"]:
+                            for i, value in enumerate(t["values"]):
+                                t["map"][i].raw = value
+                            state_str = "  ".join(
+                                f"sub{i + 1}={t['fmt'](v)}" for i, v in enumerate(t["values"])
+                            )
+                            log_event(f"{t['name']} initial state: {state_str}")
+                            t["map"].transmit()
+                            t["sent"] = True
+                node_operational.set()
 
             # Covers the observed ordering (node 2 started, TPDOs sent, *then*
             # the master starts itself) by resending once we see confirmation
             # the master is actually ready, regardless of which order the two
             # Start events happened in.
             if master_operational.is_set():
-                for t in tpdos:
-                    if t["sent"] and not t["resent"]:
-                        t["map"].transmit()
-                        log_event(
-                            f"Re-sent {t['name']} now that the master (node "
-                            f"{MASTER_NODE_ID}) has confirmed OPERATIONAL, in case "
-                            "the first transmission landed before its process "
-                            "image was ready."
-                        )
-                        t["resent"] = True
+                with pdo_lock:
+                    for t in tpdos:
+                        if t["sent"] and not t["resent"]:
+                            t["map"].transmit()
+                            log_event(
+                                f"Re-sent {t['name']} now that the master (node "
+                                f"{MASTER_NODE_ID}) has confirmed OPERATIONAL, in case "
+                                "the first transmission landed before its process "
+                                "image was ready."
+                            )
+                            t["resent"] = True
 
             time.sleep(0.2)
+
+    poller_thread = threading.Thread(target=poll_loop, daemon=True)
+    poller_thread.start()
+
+    # Interactive prompt for TPDO2 sub1, available once the node is operational.
+    tpdo2_map = tpdos[1]["map"]
+
+    try:
+        node_operational.wait()
+        print()
+        print("Node is operational. Enter a new integer value for TPDO2 sub1 anytime")
+        print("(range -32768 to 32767). Press Ctrl+C to stop the program.")
+        while True:
+            raw = input("TPDO2 sub1 = ").strip()
+            if not raw:
+                continue
+            try:
+                value = int(raw)
+            except ValueError:
+                print("Please enter a whole number.")
+                continue
+            if not (-32768 <= value <= 32767):
+                print("Out of range for INTEGER16 (-32768 to 32767).")
+                continue
+            with pdo_lock:
+                tpdo2_map[0].raw = value
+                tpdo2_map.transmit()
+            log_event(f"TPDO2 sub1 manually set to {value}")
     except KeyboardInterrupt:
         logger.info("Shutting down...")
     finally:
