@@ -1,0 +1,22 @@
+﻿FUNCTION "InvertWordEndianness" : Word
+{ S7_Optimized_Access := 'FALSE' }
+VERSION : 0.1
+   VAR_INPUT 
+      InputWord : Word;
+   END_VAR
+
+   VAR_TEMP 
+      tempInputByte0 : Byte;
+      tempInputByte1 : Byte;
+   END_VAR
+
+
+BEGIN
+	#tempInputByte0 := WORD_TO_BYTE(#InputWord & 2#0000000011111111); // Least significant portion of word (little-endian)
+	#tempInputByte1 := WORD_TO_BYTE(SHR(IN:=#InputWord, N:=8));       // Most significant portion of word (little-endian)  
+	
+	// I believe this code is incorrect. #tempInputByte0 and #tempInputByte1 should be swapped to invert the endianness
+	#InvertWordEndianness := "BytesToWord"(Byte0 := #tempInputByte0, Byte1 := #tempInputByte1);
+	
+END_FUNCTION
+

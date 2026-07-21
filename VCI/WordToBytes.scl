@@ -1,0 +1,18 @@
+﻿FUNCTION "WordToBytes" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      "Word" : Word;
+   END_VAR
+
+   VAR_OUTPUT 
+      Byte0 : Byte;
+      Byte1 : Byte;
+   END_VAR
+
+
+BEGIN
+	#Byte0 := WORD_TO_BYTE(#Word AND 2#0000000011111111);
+	#Byte1 := WORD_TO_BYTE(SHR(IN := #Word, N := 8));
+END_FUNCTION
+

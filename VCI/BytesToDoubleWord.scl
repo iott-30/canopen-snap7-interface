@@ -1,0 +1,29 @@
+﻿FUNCTION "BytesToDoubleWord" : DWord
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      Byte0 : Byte;
+      Byte1 : Byte;
+      Byte2 : Byte;
+      Byte3 : Byte;
+   END_VAR
+
+   VAR_TEMP 
+      tempWord0 : Word;
+      tempWord1 : Word;
+   END_VAR
+
+
+BEGIN
+	//This function block creates a Dword out of four bytes
+	//The order of bytes within the resulting Dword is: B3B2B1B0
+	
+	
+	#tempWord0:= "BytesToWord"(Byte0 := #Byte0, Byte1 := #Byte1);
+	#tempWord1 := "BytesToWord"(Byte0 := #Byte2, Byte1 := #Byte3);
+	
+	#BytesToDoubleWord := WORD_TO_DWORD(IN:=#tempWord0) + SHL(IN := WORD_TO_DWORD(IN:=#tempWord1), N := 16);
+	
+	
+END_FUNCTION
+
