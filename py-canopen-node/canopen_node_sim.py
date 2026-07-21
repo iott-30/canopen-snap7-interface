@@ -2,8 +2,8 @@
 CANopen slave node simulation.
 
 Opens the RH02 (gs_usb) adapter, loads a simulated device from an EDS file
-as a canopen LocalNode, boots it up over the bus, and logs all traffic to
-both the terminal and a file in real time.
+as a canopen LocalNode, boots it up over the bus, and logs traffic and
+device events to both the terminal and a file in real time.
 """
 
 import time
@@ -31,27 +31,49 @@ HEARTBEAT_MS = 500             # must match "Error Control Configuration" -> pro
 MASTER_NODE_ID = 1             # the CM CANopen module's own node ID on this network
 LOG_FILE = "canopen_traffic.log"
 
-# --- Logging setup: everything goes to both the terminal and a file, live ---
-logger = logging.getLogger("canopen_sim")
-logger.setLevel(logging.DEBUG)
 
+def ask_yes_no(prompt: str) -> bool:
+    while True:
+        choice = input(f"{prompt} (y/n): ").strip().lower()
+        if choice in ("y", "n"):
+            return choice == "y"
+        print("Please enter 'y' or 'n'.")
+
+
+show_traffic_in_console = ask_yes_no("Show raw CAN traffic in the console?")
+
+# --- Logging setup ---
+# `logger` (device/status events -- NMT state, PDO state/changes, startup
+# messages) always goes to both the terminal and the file.
+# `traffic_logger` (one line per raw CAN frame) always goes to the file, but
+# only goes to the terminal if the user opted in above.
 _fmt = logging.Formatter("%(asctime)s  %(message)s", "%H:%M:%S")
 
 file_handler = logging.FileHandler(LOG_FILE, mode="a")
 file_handler.setFormatter(_fmt)
-logger.addHandler(file_handler)
 
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(_fmt)
+
+logger = logging.getLogger("canopen_sim")
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
 logger.addHandler(console_handler)
+
+traffic_logger = logging.getLogger("canopen_sim.traffic")
+traffic_logger.setLevel(logging.DEBUG)
+traffic_logger.propagate = False  # don't also run through logger's handlers (would double-print)
+traffic_logger.addHandler(file_handler)
+if show_traffic_in_console:
+    traffic_logger.addHandler(console_handler)
 
 
 class TrafficLogger(can.Listener):
-    """Logs every CAN frame the Notifier sees to the logger above."""
+    """Logs every CAN frame the Notifier sees to traffic_logger above."""
 
     def on_message_received(self, msg: can.Message):
         data_hex = msg.data.hex(" ").upper()
-        logger.info(f"ID=0x{msg.arbitration_id:03X}  DLC={msg.dlc}  Data=[{data_hex}]")
+        traffic_logger.info(f"ID=0x{msg.arbitration_id:03X}  DLC={msg.dlc}  Data=[{data_hex}]")
 
 
 def log_event(message: str):
@@ -64,6 +86,69 @@ def log_event(message: str):
     for handler in (console_handler, file_handler):
         handler.stream.write("\n")
         handler.flush()
+
+
+def setup_tpdo(node, pdo_num, cob_id, mapping, initial_values, fmt):
+    """Configure and enable a TPDO. `mapping` is a list of (index, subindex)
+    tuples; `initial_values` is a same-length list of values to load and
+    transmit once the node reaches OPERATIONAL. `fmt` formats a value for
+    logging (e.g. binary for digital I/O, decimal for analog)."""
+    pdo_map = node.tpdo[pdo_num]
+    pdo_map.clear()
+    for index, subindex in mapping:
+        pdo_map.add_variable(index, subindex)
+    pdo_map.cob_id = cob_id
+    pdo_map.enabled = True
+    return {
+        "name": f"TPDO{pdo_num}",
+        "map": pdo_map,
+        "values": initial_values,
+        "fmt": fmt,
+        "sent": False,
+        "resent": False,
+    }
+
+
+def setup_rpdo(node, network, pdo_num, cob_id, mapping, fmt):
+    """Configure and enable an RPDO, subscribe it to the network, and attach
+    a callback that logs the initial state and any subsequent value changes."""
+    pdo_map = node.rpdo[pdo_num]
+    pdo_map.clear()
+    for index, subindex in mapping:
+        pdo_map.add_variable(index, subindex)
+    pdo_map.cob_id = cob_id
+    pdo_map.enabled = True
+    pdo_map.subscribe()  # register with the network so incoming frames actually reach us
+
+    name = f"RPDO{pdo_num}"
+    num_subs = len(mapping)
+    last_values = [None] * num_subs
+
+    def on_message(pdo_map):
+        nonlocal last_values
+        current = [pdo_map[i].raw for i in range(num_subs)]
+        if last_values == [None] * num_subs:
+            state_str = "  ".join(f"sub{i + 1}={fmt(v)}" for i, v in enumerate(current))
+            log_event(f"{name} initial state: {state_str}")
+        else:
+            changes = [
+                f"sub{i + 1}: {fmt(last_values[i])} -> {fmt(current[i])}"
+                for i in range(num_subs) if current[i] != last_values[i]
+            ]
+            if changes:
+                log_event(f"{name} changed - " + ", ".join(changes))
+        last_values = current
+
+    pdo_map.add_callback(on_message)
+    return pdo_map
+
+
+def fmt_bin8(v: int) -> str:
+    return f"0b{v:08b}"
+
+
+def fmt_decimal(v: int) -> str:
+    return str(v)
 
 
 def main():
@@ -106,57 +191,48 @@ def main():
     node.nmt.state = "PRE-OPERATIONAL"
 
     # --- PDO setup ---
-    # Configured to match what CM Configuration Studio actually assigns
-    # (confirmed from a captured successful boot): TPDO1 = COB-ID 0x180+id,
-    # RPDO1 = COB-ID 0x200+id, both using the EDS's default 2-byte mapping
-    # (sub1 + sub2). This is hardcoded rather than tracked live from the
-    # master's SDO writes -- simple and correct as long as Configuration
-    # Studio isn't changed to use different COB-IDs or mappings.
-    TPDO1_COB_ID = 0x180 + NODE_ID
-    RPDO1_COB_ID = 0x200 + NODE_ID
+    # COB-IDs and mappings are hardcoded to match what CM Configuration
+    # Studio actually assigns (confirmed from captured traffic) rather than
+    # tracked live from the master's SDO writes -- simple and correct as long
+    # as Configuration Studio isn't changed to use different values.
+    #
+    # PDO1 pair: 8-bit digital I/O (2-byte mapping: sub1 + sub2 each)
+    # PDO2 pair: 16-bit analog I/O (4 channels: sub1-sub4 each)
+    tpdos = [
+        setup_tpdo(
+            node, 1, 0x180 + NODE_ID,
+            mapping=[(0x6000, 1), (0x6000, 2)],
+            initial_values=[0b10010000, 0x00],
+            fmt=fmt_bin8,
+        ),
+        setup_tpdo(
+            node, 2, 0x280 + NODE_ID,
+            mapping=[(0x6401, 1), (0x6401, 2), (0x6401, 3), (0x6401, 4)],
+            initial_values=[1234, 4567, 7654, 4321],
+            fmt=fmt_decimal,
+        ),
+    ]
 
-    tpdo1 = node.tpdo[1]
-    tpdo1.clear()
-    tpdo1.add_variable(0x6000, 1)  # sub1: the byte we're actually driving
-    tpdo1.add_variable(0x6000, 2)  # sub2: left at its default (0x00)
-    tpdo1.cob_id = TPDO1_COB_ID
-    tpdo1.enabled = True
-
-    rpdo1 = node.rpdo[1]
-    rpdo1.clear()
-    rpdo1.add_variable(0x6200, 1)  # sub1: what the PLC is driving
-    rpdo1.add_variable(0x6200, 2)  # sub2
-    rpdo1.cob_id = RPDO1_COB_ID
-    rpdo1.enabled = True
-    rpdo1.subscribe()  # register with the network so incoming frames on 0x202 actually reach us
-
-    last_rpdo1 = [None, None]
-
-    def on_rpdo1(pdo_map):
-        nonlocal last_rpdo1
-        current = [pdo_map[i].raw for i in range(2)]
-        if last_rpdo1 == [None, None]:
-            log_event(f"RPDO1 initial state: sub1=0b{current[0]:08b}  sub2=0b{current[1]:08b}")
-        else:
-            changes = [
-                f"sub{i + 1}: 0b{last_rpdo1[i]:08b} -> 0b{current[i]:08b}"
-                for i in range(2) if current[i] != last_rpdo1[i]
-            ]
-            if changes:
-                log_event("RPDO1 changed - " + ", ".join(changes))
-        last_rpdo1 = current
-
-    rpdo1.add_callback(on_rpdo1)
+    setup_rpdo(
+        node, network, 1, 0x200 + NODE_ID,
+        mapping=[(0x6200, 1), (0x6200, 2)],
+        fmt=fmt_bin8,
+    )
+    setup_rpdo(
+        node, network, 2, 0x300 + NODE_ID,
+        mapping=[(0x6411, 1), (0x6411, 2), (0x6411, 3), (0x6411, 4)],
+        fmt=fmt_decimal,
+    )
 
     # In both captured logs, the master formally starts node 2 (targeted Start,
     # 01 02) roughly a second *before* it starts itself (01 01) and broadcasts
-    # a final Start (01 00) -- and TPDO1 only gets picked up into the PLC's
-    # process image after that second step. Since TPDO1 is event-driven with
-    # no periodic resend (event timer = 0), a single transmission that lands
-    # before the master's own Start is simply lost -- nothing will trigger us
-    # to send it again. Watching the master's own heartbeat (node MASTER_NODE_ID)
-    # for OPERATIONAL gives us a real signal to resend against, instead of
-    # guessing at a delay.
+    # a final Start (01 00) -- and TPDO data only gets picked up into the PLC's
+    # process image after that second step. Since our TPDOs are event-driven
+    # with no periodic resend (event timer = 0), a single transmission that
+    # lands before the master's own Start is simply lost -- nothing triggers
+    # us to send it again. Watching the master's own heartbeat (node
+    # MASTER_NODE_ID) for OPERATIONAL gives us a real signal to resend
+    # against, instead of guessing at a delay.
     master_operational = threading.Event()
 
     def on_master_heartbeat(can_id, data, timestamp):
@@ -169,10 +245,9 @@ def main():
 
     # PDOs are only meaningful once the master brings us to OPERATIONAL, so
     # wait for that transition (there's no state-change callback in canopen's
-    # NMT implementation, so this just polls) before sending TPDO1's first value.
+    # NMT implementation, so this just polls) before sending each TPDO's
+    # first value.
     last_nmt_state = None
-    tpdo1_initialized = False
-    tpdo1_resent_after_master = False
 
     try:
         while True:
@@ -181,26 +256,33 @@ def main():
                 logger.info(f"NMT state -> {current_state}")
                 last_nmt_state = current_state
 
-            if current_state == "OPERATIONAL" and not tpdo1_initialized:
-                tpdo1[0].raw = 0b10010000
-                log_event(
-                    f"TPDO1 initial state: sub1=0b{tpdo1[0].raw:08b}  sub2=0b{tpdo1[1].raw:08b}"
-                )
-                tpdo1.transmit()
-                tpdo1_initialized = True
+            if current_state == "OPERATIONAL":
+                for t in tpdos:
+                    if not t["sent"]:
+                        for i, value in enumerate(t["values"]):
+                            t["map"][i].raw = value
+                        state_str = "  ".join(
+                            f"sub{i + 1}={t['fmt'](v)}" for i, v in enumerate(t["values"])
+                        )
+                        log_event(f"{t['name']} initial state: {state_str}")
+                        t["map"].transmit()
+                        t["sent"] = True
 
-            # Covers the observed ordering (node 2 started, TPDO1 sent, *then*
+            # Covers the observed ordering (node 2 started, TPDOs sent, *then*
             # the master starts itself) by resending once we see confirmation
             # the master is actually ready, regardless of which order the two
             # Start events happened in.
-            if tpdo1_initialized and master_operational.is_set() and not tpdo1_resent_after_master:
-                tpdo1.transmit()
-                log_event(
-                    "Re-sent TPDO1 now that the master (node "
-                    f"{MASTER_NODE_ID}) has confirmed OPERATIONAL, in case the "
-                    "first transmission landed before its process image was ready."
-                )
-                tpdo1_resent_after_master = True
+            if master_operational.is_set():
+                for t in tpdos:
+                    if t["sent"] and not t["resent"]:
+                        t["map"].transmit()
+                        log_event(
+                            f"Re-sent {t['name']} now that the master (node "
+                            f"{MASTER_NODE_ID}) has confirmed OPERATIONAL, in case "
+                            "the first transmission landed before its process "
+                            "image was ready."
+                        )
+                        t["resent"] = True
 
             time.sleep(0.2)
     except KeyboardInterrupt:
