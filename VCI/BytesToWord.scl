@@ -1,0 +1,20 @@
+﻿FUNCTION "BytesToWord" : Word
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      Byte0 : Byte;
+      Byte1 : Byte;
+   END_VAR
+
+
+BEGIN
+	//This block turns two bytes into a word (little-endian)
+	//The order of bytes within the resulting word is: B1B0
+	
+	//Example: Byte0 is 1111111 and Byte1 is 10101010
+	//This operation will add Byte0 (1111111) to the 8-bit-leftshifted version of Byte1 (10101010 00000000)
+	//10101010 00000000 + 11111111
+	//Result Word = 10101010 11111111
+	#BytesToWord := BYTE_TO_WORD(IN:=#Byte0) + SHL(IN := BYTE_TO_WORD(IN:=#Byte1), N := 8);
+END_FUNCTION
+
