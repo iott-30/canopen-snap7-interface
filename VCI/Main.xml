@@ -155,6 +155,132 @@
     <Access Scope="GlobalVariable" UId="21">
       <Symbol>
         <Component Name="ControlDB" />
+        <Component Name="CanProcessImageIn" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="MappedCanProcessImageInputs" />
+        <Component Name="statCanProcessImageInputs" />
+      </Symbol>
+    </Access>
+    <Call UId="23">
+      <CallInfo Name="MapCanProcessImageToDB" BlockType="FC">
+        <Parameter Name="ProcessImageByteArray" Section="Input" Type="Array[0..31] of Byte" />
+        <Parameter Name="CanProcessImageIn" Section="Output" Type="&quot;typeCanProcessImageInputs&quot;" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="24">
+      <Powerrail />
+      <NameCon UId="23" Name="en" />
+    </Wire>
+    <Wire UId="25">
+      <IdentCon UId="21" />
+      <NameCon UId="23" Name="ProcessImageByteArray" />
+    </Wire>
+    <Wire UId="26">
+      <NameCon UId="23" Name="CanProcessImageIn" />
+      <IdentCon UId="22" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="9" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="A" CompositionName="Items">
+                <AttributeList>
+                  <Culture>en-US</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="B" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="C" CompositionName="Items">
+                <AttributeList>
+                  <Culture>en-US</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="D" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v5">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="MappedCanProcessImageOutputs" />
+        <Component Name="statCanProcessImageOutputs" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="ControlDB" />
+        <Component Name="CanProcessImageOut" />
+      </Symbol>
+    </Access>
+    <Call UId="23">
+      <CallInfo Name="MapDBToCanProcessImage" BlockType="FC">
+        <Parameter Name="CanProcessImageOut" Section="Input" Type="&quot;typeCanProcessImageOutputs&quot;" />
+        <Parameter Name="ProcessImageByteArray" Section="Output" Type="Array[0..9] of Byte" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="24">
+      <Powerrail />
+      <NameCon UId="23" Name="en" />
+    </Wire>
+    <Wire UId="25">
+      <IdentCon UId="21" />
+      <NameCon UId="23" Name="CanProcessImageOut" />
+    </Wire>
+    <Wire UId="26">
+      <NameCon UId="23" Name="ProcessImageByteArray" />
+      <IdentCon UId="22" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="E" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="F" CompositionName="Items">
+                <AttributeList>
+                  <Culture>en-US</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="10" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="11" CompositionName="Items">
+                <AttributeList>
+                  <Culture>en-US</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="12" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v5">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="ControlDB" />
         <Component Name="CanProcessImageOut" />
       </Symbol>
     </Access>
@@ -191,7 +317,7 @@
         <Parameter Name="Error" Section="Output" Type="Bool" />
         <Parameter Name="Status" Section="Output" Type="DWord" />
         <Parameter Name="Done" Section="Output" Type="Bool" />
-        <Parameter Name="CanProcessImageOutArray" Section="InOut" Type="Array[0..3] of Byte" />
+        <Parameter Name="CanProcessImageOutArray" Section="InOut" Type="Array[0..9] of Byte" />
       </CallInfo>
     </Call>
   </Parts>
@@ -225,9 +351,9 @@
           <ProgrammingLanguage>LAD</ProgrammingLanguage>
         </AttributeList>
         <ObjectList>
-          <MultilingualText ID="9" CompositionName="Comment">
+          <MultilingualText ID="13" CompositionName="Comment">
             <ObjectList>
-              <MultilingualTextItem ID="A" CompositionName="Items">
+              <MultilingualTextItem ID="14" CompositionName="Items">
                 <AttributeList>
                   <Culture>en-US</Culture>
                   <Text />
@@ -235,9 +361,9 @@
               </MultilingualTextItem>
             </ObjectList>
           </MultilingualText>
-          <MultilingualText ID="B" CompositionName="Title">
+          <MultilingualText ID="15" CompositionName="Title">
             <ObjectList>
-              <MultilingualTextItem ID="C" CompositionName="Items">
+              <MultilingualTextItem ID="16" CompositionName="Items">
                 <AttributeList>
                   <Culture>en-US</Culture>
                   <Text />
@@ -247,15 +373,15 @@
           </MultilingualText>
         </ObjectList>
       </SW.Blocks.CompileUnit>
-      <SW.Blocks.CompileUnit ID="D" CompositionName="CompileUnits">
+      <SW.Blocks.CompileUnit ID="17" CompositionName="CompileUnits">
         <AttributeList>
           <NetworkSource />
           <ProgrammingLanguage>LAD</ProgrammingLanguage>
         </AttributeList>
         <ObjectList>
-          <MultilingualText ID="E" CompositionName="Comment">
+          <MultilingualText ID="18" CompositionName="Comment">
             <ObjectList>
-              <MultilingualTextItem ID="F" CompositionName="Items">
+              <MultilingualTextItem ID="19" CompositionName="Items">
                 <AttributeList>
                   <Culture>en-US</Culture>
                   <Text />
@@ -263,9 +389,9 @@
               </MultilingualTextItem>
             </ObjectList>
           </MultilingualText>
-          <MultilingualText ID="10" CompositionName="Title">
+          <MultilingualText ID="1A" CompositionName="Title">
             <ObjectList>
-              <MultilingualTextItem ID="11" CompositionName="Items">
+              <MultilingualTextItem ID="1B" CompositionName="Items">
                 <AttributeList>
                   <Culture>en-US</Culture>
                   <Text />
@@ -275,9 +401,9 @@
           </MultilingualText>
         </ObjectList>
       </SW.Blocks.CompileUnit>
-      <MultilingualText ID="12" CompositionName="Title">
+      <MultilingualText ID="1C" CompositionName="Title">
         <ObjectList>
-          <MultilingualTextItem ID="13" CompositionName="Items">
+          <MultilingualTextItem ID="1D" CompositionName="Items">
             <AttributeList>
               <Culture>en-US</Culture>
               <Text>"Main Program Sweep (Cycle)"</Text>

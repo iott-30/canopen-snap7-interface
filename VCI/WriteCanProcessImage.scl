@@ -9,7 +9,7 @@ VERSION : 0.1
    END_VAR
 
    VAR_IN_OUT 
-      CanProcessImageOutArray : Array[0..3] of Byte;
+      CanProcessImageOutArray : Array[0..9] of Byte;
    END_VAR
 
 
@@ -18,14 +18,14 @@ BEGIN
 	    "WRREC_DB"(REQ := true,
 	               ID := 269,
 	               INDEX := 16#91,
-	               LEN := 4,
+	               LEN := 10,
 	               DONE => #Done,
 	               BUSY => #Busy,
 	               ERROR => #Error,
 	               STATUS => #Status,
 	               RECORD := #CanProcessImageOutArray);
 	    
-	
+	// Changed len from 4 to 10 since my output process image is larger now. Also changed the InOut variable's array size
 	
 	// IF #Done = true  THEN
 	//     "ControlDB".Write := false;

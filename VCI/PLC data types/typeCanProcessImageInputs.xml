@@ -7,10 +7,10 @@
   <Section Name="None">
     <Member Name="SlaveDigitalInput1" Datatype="Byte" />
     <Member Name="SlaveDigitalInput2" Datatype="Byte" />
-    <Member Name="SlaveAnalogInput1" Datatype="UInt" />
-    <Member Name="SlaveAnalogInput2" Datatype="UInt" />
-    <Member Name="SlaveAnalogInput3" Datatype="UInt" />
-    <Member Name="SlaveAnalogInput4" Datatype="UInt" />
+    <Member Name="SlaveAnalogInput1" Datatype="Int" />
+    <Member Name="SlaveAnalogInput2" Datatype="Int" />
+    <Member Name="SlaveAnalogInput3" Datatype="Int" />
+    <Member Name="SlaveAnalogInput4" Datatype="Int" />
   </Section>
 </Sections></Interface>
       <Name>typeCanProcessImageInputs</Name>

@@ -27,7 +27,7 @@ BEGIN
 	               VALID => #Valid);
 	    
 	// It might be an issue that REQ is always true since it uses a rising edge
-	// according to ChatGPT
+	// according to ChatGPT. I haven't noticed any issues.
 	    
 	// (written by Siemens dev for application example, not sure what it's for)
 	// IF #Valid = true  THEN

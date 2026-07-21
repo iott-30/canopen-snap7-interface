@@ -6,7 +6,7 @@
       <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5">
   <Section Name="Static">
     <Member Name="CanProcessImageIn" Datatype="Array[0..31] of Byte" />
-    <Member Name="CanProcessImageOut" Datatype="Array[0..3] of Byte">
+    <Member Name="CanProcessImageOut" Datatype="Array[0..9] of Byte">
       <Subelement Path="0">
         <StartValue>16#F0</StartValue>
       </Subelement>
@@ -21,10 +21,6 @@
     <Member Name="WriteCanProcessImageSize" Datatype="UInt" />
     <Member Name="WriteCanProcessImageStatus" Datatype="DWord" />
     <Member Name="WriteCanProcessImageDone" Datatype="Bool" />
-    <Member Name="DriveControlStart" Datatype="Bool" />
-    <Member Name="DriveControlTargetVelocity" Datatype="Real" />
-    <Member Name="DriveControlStatusWord" Datatype="Word" />
-    <Member Name="DriveControlCurrentVelocity" Datatype="Int" />
     <Member Name="ErrorRegisterReq" Datatype="Bool" />
     <Member Name="ErrorRegisterNode" Datatype="Int" />
     <Member Name="ErrorRegisterBusy" Datatype="Bool" />
