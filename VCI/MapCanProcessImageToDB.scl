@@ -1,0 +1,45 @@
+﻿FUNCTION "MapCanProcessImageToDB" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      ProcessImageByteArray : Array[0..31] of Byte;
+   END_VAR
+
+   VAR_OUTPUT 
+      CanProcessImageIn : "typeCanProcessImageInputs";
+   END_VAR
+
+
+BEGIN
+	//map bytes 
+	#CanProcessImageIn.SlaveDigitalInput1 := #ProcessImageByteArray[0];
+	#CanProcessImageIn.SlaveDigitalInput2 := #ProcessImageByteArray[1];
+	
+	
+	//map words
+	// I think the byte order was originally reversed because MappedCanProcessImageInputs is a non-optimized DB, which uses traditional Siemens byte
+	// ordering, which looks like big-endian.
+	// It's a non-optimized DB because the ReadSDO FB uses it, which according to the CM CANopen module manual requires a non-optimized DB.
+	// This is most likely because ReadSDO depends on a fixed memory layout of the DB.
+	// Now the byte order is not reversed in the BytesToWord arguments
+	#CanProcessImageIn.SlaveAnalogInput1 := "BytesToWord"(Byte0 := #ProcessImageByteArray[2], Byte1 := #ProcessImageByteArray[3]);
+	#CanProcessImageIn.SlaveAnalogInput2 := "BytesToWord"(Byte0 := #ProcessImageByteArray[4],Byte1 := #ProcessImageByteArray[5]);
+	#CanProcessImageIn.SlaveAnalogInput3 := "BytesToWord"(Byte0 := #ProcessImageByteArray[6], Byte1 := #ProcessImageByteArray[7]);
+	#CanProcessImageIn.SlaveAnalogInput4 := "BytesToWord"(Byte0 := #ProcessImageByteArray[8], Byte1 := #ProcessImageByteArray[9]);
+	
+	//map dwords
+	// Byte order reversed for aforementioned reason
+	
+	// There aren't any dwords in use in the current program, but here is an example if needed in the future:
+	// #CanProcessImageIn.SensorInPvTemperature := "BytesToDoubleWord"(Byte0 :=#ProcessImageByteArray[11],
+	//                  Byte1 :=#ProcessImageByteArray[10],
+	//                  Byte2 :=#ProcessImageByteArray[9],
+	//                  Byte3 :=#ProcessImageByteArray[8]);
+	//                  
+	
+	// If I ever want to avoid using functions for this process, I could use slice notation:
+	//     #CanProcessImageIn.SlaveAnalogInput1.%B0 := #ProcessImageByteArray[3]; // Low byte
+	//     #CanProcessImageIn.SlaveAnalogInput1.%B1 := #ProcessImageByteArray[2]; // High byte
+	
+END_FUNCTION
+
