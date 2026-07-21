@@ -15,7 +15,7 @@
     <Member Name="Done" Datatype="Bool" />
   </Section>
   <Section Name="InOut">
-    <Member Name="CanProcessImageOutArray" Datatype="Array[0..3] of Byte" />
+    <Member Name="CanProcessImageOutArray" Datatype="Array[0..9] of Byte" />
   </Section>
   <Section Name="Static" />
 </Sections></Interface>
