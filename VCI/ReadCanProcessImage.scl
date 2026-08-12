@@ -15,17 +15,17 @@ VERSION : 0.1
 
 
 BEGIN
-	    "RDREC_DB"(REQ := true,
-	               ID := 269,
-	               INDEX := 16#90,
-	               MLEN := 32,
-	               RECORD := #CanProcessImage,
-	               BUSY => #Busy,
-	               ERROR => #Error,
-	               LEN => #Len,
-	               STATUS => #Status,
-	               VALID => #Valid);
-	    
+	"RDREC_DB"(REQ := true,
+	           ID := 269,
+	           INDEX := 16#90,
+	           MLEN := 32,
+	           RECORD := #CanProcessImage,
+	           BUSY => #Busy,
+	           ERROR => #Error,
+	           LEN => #Len,
+	           STATUS => #Status,
+	           VALID => #Valid);
+	
 	// It might be an issue that REQ is always true since it uses a rising edge
 	// according to ChatGPT. I haven't noticed any issues.
 	    
