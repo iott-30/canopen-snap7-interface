@@ -5,12 +5,27 @@
     <AttributeList>
       <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5">
   <Section Name="None">
-    <Member Name="SlaveDigitalInput1" Datatype="Byte" />
-    <Member Name="SlaveDigitalInput2" Datatype="Byte" />
-    <Member Name="SlaveAnalogInput1" Datatype="Int" />
-    <Member Name="SlaveAnalogInput2" Datatype="Int" />
-    <Member Name="SlaveAnalogInput3" Datatype="Int" />
-    <Member Name="SlaveAnalogInput4" Datatype="Int" />
+    <Member Name="BufferA" Datatype="Struct">
+      <Member Name="SlaveDigitalInput1" Datatype="Byte" />
+      <Member Name="SlaveDigitalInput2" Datatype="Byte" />
+      <Member Name="SlaveAnalogInput1" Datatype="Int" />
+      <Member Name="SlaveAnalogInput2" Datatype="Int" />
+      <Member Name="SlaveAnalogInput3" Datatype="Int" />
+      <Member Name="SlaveAnalogInput4" Datatype="Int" />
+    </Member>
+    <Member Name="BufferB" Datatype="Struct">
+      <Member Name="SlaveDigitalInput1" Datatype="Byte" />
+      <Member Name="SlaveDigitalInput2" Datatype="Byte" />
+      <Member Name="SlaveAnalogInput1" Datatype="Int" />
+      <Member Name="SlaveAnalogInput2" Datatype="Int" />
+      <Member Name="SlaveAnalogInput3" Datatype="Int" />
+      <Member Name="SlaveAnalogInput4" Datatype="Int" />
+    </Member>
+    <Member Name="ActiveBuffer" Datatype="Byte">
+      <Comment>
+        <MultiLanguageText Lang="en-US">0 = BufferA, 1 = BufferB. ActiveBuffer is the buffer the PC reads from, and the inactive buffer is the buffer the PLC updates from the input CAN process image.</MultiLanguageText>
+      </Comment>
+    </Member>
   </Section>
 </Sections></Interface>
       <Name>typeCanProcessImageInputs</Name>
