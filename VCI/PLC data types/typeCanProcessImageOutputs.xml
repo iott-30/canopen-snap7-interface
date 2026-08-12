@@ -5,12 +5,30 @@
     <AttributeList>
       <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5">
   <Section Name="None">
-    <Member Name="SlaveDigitalOutput1" Datatype="Byte" />
-    <Member Name="SlaveDigitalOutput2" Datatype="Byte" />
-    <Member Name="SlaveAnalogOutput1" Datatype="Int" />
-    <Member Name="SlaveAnalogOutput2" Datatype="Int" />
-    <Member Name="SlaveAnalogOutput3" Datatype="Int" />
-    <Member Name="SlaveAnalogOutput4" Datatype="Int" />
+    <Member Name="BufferA" Datatype="Struct">
+      <Member Name="SlaveDigitalOutput1" Datatype="Byte" />
+      <Member Name="SlaveDigitalOutput2" Datatype="Byte" />
+      <Member Name="SlaveAnalogOutput1" Datatype="Int" />
+      <Member Name="SlaveAnalogOutput2" Datatype="Int" />
+      <Member Name="SlaveAnalogOutput3" Datatype="Int" />
+      <Member Name="SlaveAnalogOutput4" Datatype="Int" />
+      <Member Name="RequestID" Datatype="UInt" />
+    </Member>
+    <Member Name="BufferB" Datatype="Struct">
+      <Member Name="SlaveDigitalOutput1" Datatype="Byte" />
+      <Member Name="SlaveDigitalOutput2" Datatype="Byte" />
+      <Member Name="SlaveAnalogOutput1" Datatype="Int" />
+      <Member Name="SlaveAnalogOutput2" Datatype="Int" />
+      <Member Name="SlaveAnalogOutput3" Datatype="Int" />
+      <Member Name="SlaveAnalogOutput4" Datatype="Int" />
+      <Member Name="RequestID" Datatype="UInt" />
+    </Member>
+    <Member Name="ResponseID" Datatype="UInt" />
+    <Member Name="ActiveBuffer" Datatype="Byte">
+      <Comment>
+        <MultiLanguageText Lang="en-US"> 0 = BufferA, 1 = BufferB. ActiveBuffer is the buffer the PLC uses to write the output process image, and the inactive buffer is the buffer the PC writes to.</MultiLanguageText>
+      </Comment>
+    </Member>
   </Section>
 </Sections></Interface>
       <Name>typeCanProcessImageOutputs</Name>
