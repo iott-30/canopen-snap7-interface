@@ -9,6 +9,13 @@
       <AttributeList>
         <BooleanAttribute Name="SetPoint" SystemDefined="true">true</BooleanAttribute>
       </AttributeList>
+      <Sections>
+        <Section Name="None">
+          <Member Name="ActiveBuffer" Datatype="Byte">
+            <StartValue>16#0</StartValue>
+          </Member>
+        </Section>
+      </Sections>
     </Member>
   </Section>
 </Sections></Interface>
