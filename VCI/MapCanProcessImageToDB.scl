@@ -5,30 +5,42 @@ VERSION : 0.1
       ProcessImageByteArray : Array[0..31] of Byte;
    END_VAR
 
-   VAR_OUTPUT 
+   VAR_IN_OUT 
       CanProcessImageIn : "typeCanProcessImageInputs";
    END_VAR
 
 
 BEGIN
-	//map bytes 
-	#CanProcessImageIn.SlaveDigitalInput1 := #ProcessImageByteArray[0];
-	#CanProcessImageIn.SlaveDigitalInput2 := #ProcessImageByteArray[1];
+	// Double buffer functionality implemented for asynchronous access (snap7)
+	IF #CanProcessImageIn.ActiveBuffer = 0 THEN
+	    //map bytes 
+	    #CanProcessImageIn.BufferB.SlaveDigitalInput1 := #ProcessImageByteArray[0];
+	    #CanProcessImageIn.BufferB.SlaveDigitalInput2 := #ProcessImageByteArray[1];
+	    
+	    //map words
+	    #CanProcessImageIn.BufferB.SlaveAnalogInput1 := "BytesToWord"(Byte0 := #ProcessImageByteArray[2], Byte1 := #ProcessImageByteArray[3]);
+	    #CanProcessImageIn.BufferB.SlaveAnalogInput2 := "BytesToWord"(Byte0 := #ProcessImageByteArray[4], Byte1 := #ProcessImageByteArray[5]);
+	    #CanProcessImageIn.BufferB.SlaveAnalogInput3 := "BytesToWord"(Byte0 := #ProcessImageByteArray[6], Byte1 := #ProcessImageByteArray[7]);
+	    #CanProcessImageIn.BufferB.SlaveAnalogInput4 := "BytesToWord"(Byte0 := #ProcessImageByteArray[8], Byte1 := #ProcessImageByteArray[9]);
+	    
+	    #CanProcessImageIn.ActiveBuffer := 1;
+	ELSE
+	    //map bytes 
+	    #CanProcessImageIn.BufferA.SlaveDigitalInput1 := #ProcessImageByteArray[0];
+	    #CanProcessImageIn.BufferA.SlaveDigitalInput2 := #ProcessImageByteArray[1];
+	    
+	    //map words
+	    #CanProcessImageIn.BufferA.SlaveAnalogInput1 := "BytesToWord"(Byte0 := #ProcessImageByteArray[2], Byte1 := #ProcessImageByteArray[3]);
+	    #CanProcessImageIn.BufferA.SlaveAnalogInput2 := "BytesToWord"(Byte0 := #ProcessImageByteArray[4], Byte1 := #ProcessImageByteArray[5]);
+	    #CanProcessImageIn.BufferA.SlaveAnalogInput3 := "BytesToWord"(Byte0 := #ProcessImageByteArray[6], Byte1 := #ProcessImageByteArray[7]);
+	    #CanProcessImageIn.BufferA.SlaveAnalogInput4 := "BytesToWord"(Byte0 := #ProcessImageByteArray[8], Byte1 := #ProcessImageByteArray[9]);
+	    
+	    #CanProcessImageIn.ActiveBuffer := 0;
+	END_IF;
 	
-	
-	//map words
-	// I think the byte order was originally reversed because MappedCanProcessImageInputs is a non-optimized DB, which uses traditional Siemens byte
-	// ordering, which looks like big-endian.
-	// It's a non-optimized DB because the ReadSDO FB uses it, which according to the CM CANopen module manual requires a non-optimized DB.
-	// This is most likely because ReadSDO depends on a fixed memory layout of the DB.
-	// Now the byte order is not reversed in the BytesToWord arguments
-	#CanProcessImageIn.SlaveAnalogInput1 := "BytesToWord"(Byte0 := #ProcessImageByteArray[2], Byte1 := #ProcessImageByteArray[3]);
-	#CanProcessImageIn.SlaveAnalogInput2 := "BytesToWord"(Byte0 := #ProcessImageByteArray[4],Byte1 := #ProcessImageByteArray[5]);
-	#CanProcessImageIn.SlaveAnalogInput3 := "BytesToWord"(Byte0 := #ProcessImageByteArray[6], Byte1 := #ProcessImageByteArray[7]);
-	#CanProcessImageIn.SlaveAnalogInput4 := "BytesToWord"(Byte0 := #ProcessImageByteArray[8], Byte1 := #ProcessImageByteArray[9]);
 	
 	//map dwords
-	// Byte order reversed for aforementioned reason
+	// Byte order reversed in application example. Not sure why as the expected byte order worked fine for me; change order as needed.
 	
 	// There aren't any dwords in use in the current program, but here is an example if needed in the future:
 	// #CanProcessImageIn.SensorInPvTemperature := "BytesToDoubleWord"(Byte0 :=#ProcessImageByteArray[11],
@@ -37,7 +49,7 @@ BEGIN
 	//                  Byte3 :=#ProcessImageByteArray[8]);
 	//                  
 	
-	// If I ever want to avoid using functions for this process, I could use slice notation:
+	// To avoid using functions for this process, use slice notation:
 	//     #CanProcessImageIn.SlaveAnalogInput1.%B0 := #ProcessImageByteArray[3]; // Low byte
 	//     #CanProcessImageIn.SlaveAnalogInput1.%B1 := #ProcessImageByteArray[2]; // High byte
 	
